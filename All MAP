@@ -1,0 +1,51 @@
+--==========================================================================
+-- NaRak Hub | Multi-Game Loader
+-- โหลดสคริปต์อัตโนมัติตามแมพที่เข้า
+--==========================================================================
+
+-- ลิสต์เกมที่รองรับ (เพิ่มเกมใหม่ได้ที่นี่)
+local SUPPORTED_GAMES = {
+    [124216119978534] = { -- Ride A Pet
+        Name   = "Ride A Pet",
+        Script = "https://raw.githubusercontent.com/sleephub-pro/NaRak-Hub/refs/heads/main/Ride%20A%20Pet"
+    },
+    [113290951185459] = { -- Anime Dice
+        Name   = "Anime Dice",
+        Script = "https://raw.githubusercontent.com/sleephub-pro/NaRak-Hub/refs/heads/main/Anime%20Dice"
+    },
+}
+
+-- แจ้งเตือนในเกม (ไม่ต้องโหลด Fluent หนัก ๆ สำหรับ loader)
+local function notify(title, text, duration)
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = title,
+            Text = text,
+            Duration = duration or 5
+        })
+    end)
+end
+
+-- เช็คแมพปัจจุบัน
+local gameInfo = SUPPORTED_GAMES[game.PlaceId]
+
+if gameInfo then
+    print("[NaRak Hub] ตรวจพบแมพ: " .. gameInfo.Name .. " (PlaceId: " .. game.PlaceId .. ")")
+    notify("NaRak Hub", "กำลังโหลด: " .. gameInfo.Name, 4)
+
+    local ok, err = pcall(function()
+        local script = game:HttpGet(gameInfo.Script)
+        loadstring(script)()
+    end)
+
+    if ok then
+        print("[NaRak Hub] โหลด " .. gameInfo.Name .. " สำเร็จ")
+    else
+        warn("[NaRak Hub] โหลดสคริปต์ไม่สำเร็จ: " .. tostring(err))
+        notify("NaRak Hub", "โหลดสคริปต์ไม่สำเร็จ! ลองรันใหม่อีกครั้ง", 6)
+    end
+else
+    -- เข้าแมพที่ไม่รองรับ
+    warn("[NaRak Hub] แมพนี้ยังไม่รองรับ (PlaceId: " .. game.PlaceId .. ")")
+    notify("NaRak Hub", "แมพนี้ยังไม่รองรับ!", 5)
+end
